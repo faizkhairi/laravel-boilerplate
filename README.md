@@ -40,9 +40,9 @@ Production-ready Laravel boilerplate with **zero external account dependencies**
 ### Installation
 
 ```bash
-# Clone or create from template
-git clone https://github.com/your-org/laravel-boilerplate.git
-cd laravel-boilerplate
+# Create project from template
+gh repo create my-app --template faizkhairi/laravel-boilerplate --private --clone
+cd my-app
 
 # Install PHP dependencies
 composer install
@@ -298,3 +298,7 @@ MIT. See [LICENSE](LICENSE).
 ## Documentation
 
 See [CLAUDE.md](CLAUDE.md) for AI-assisted development and conventions.
+
+## Author
+
+**Faiz Khairi** — [faizkhairi.my](https://faizkhairi.my) — [@faizkhairi](https://github.com/faizkhairi)

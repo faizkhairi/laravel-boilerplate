@@ -1,10 +1,17 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "faizkhairi/laravel-boilerplate",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "Production-ready Laravel 12 boilerplate with Breeze + Inertia + Vue 3, RBAC, audit logging, Stripe (opt-in), Docker Compose. Zero external dependencies.",
+    "keywords": ["laravel", "boilerplate", "template", "inertia", "vue", "rbac", "stripe"],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Faiz Khairi",
+            "email": "faiz@faizkhairi.my",
+            "homepage": "https://faizkhairi.my"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
