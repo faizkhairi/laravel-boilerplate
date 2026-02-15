@@ -192,6 +192,16 @@ npm run dev          # Vite (separate terminal)
 php artisan test
 ```
 
+### Pre-Push Build Verification
+
+**Always run the production build locally before pushing to CI:**
+```bash
+npm run build && php artisan test
+```
+This catches Vite build issues (missing path aliases, component imports) and test failures.
+
+**Important:** CI uses PHP 8.4. Ensure local PHP matches or is compatible. Laravel 12 + Symfony 8.x requires PHP >= 8.4.
+
 ### Verification (post-clone)
 
 1. `composer install` && `npm install --legacy-peer-deps`
