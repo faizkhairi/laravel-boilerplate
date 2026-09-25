@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "faizkhairi/laravel-boilerplate",
     "type": "project",
-    "description": "Production-ready Laravel 12 boilerplate with Breeze + Inertia + Vue 3, RBAC, audit logging, Stripe (opt-in), Docker Compose. Zero external dependencies.",
+    "description": "Laravel 12 starter with Breeze + Inertia + Vue 3, RBAC, audit logging, Stripe (opt-in), Docker Compose. No third-party SaaS accounts required.",
     "keywords": ["laravel", "boilerplate", "template", "inertia", "vue", "rbac", "stripe"],
     "license": "MIT",
     "authors": [

@@ -1,6 +1,6 @@
 # Laravel Boilerplate
 
-Production-ready Laravel boilerplate with **zero external account dependencies**. Self-contained template for building web applications with Inertia.js, Vue 3, and Tailwind CSS.
+Laravel starter that needs **no third-party SaaS accounts**. Self-contained template for building web applications with Inertia.js, Vue 3, and Tailwind CSS.
 
 **Use this template** — Click "Use this template" on GitHub to create a new repository from this boilerplate.
 
@@ -26,7 +26,7 @@ Production-ready Laravel boilerplate with **zero external account dependencies**
 - **💳 Stripe Integration (Opt-in)** — Full checkout + webhook handling; `StripeController` + `StripeService`; disabled by default
 - **⚡ Queue Support** — `SendWelcomeEmail` job + `WelcomeMail` mailable; set `QUEUE_CONNECTION=database`
 
-**Zero external dependencies** — No Clerk, Resend, Sentry, PostHog, or any SaaS. Run `composer install`, `npm install`, and `docker compose up -d` to start.
+**No third-party SaaS accounts required**: no Clerk, Resend, Sentry, or PostHog. Stripe is opt-in and only needed if you enable billing. Run `composer install`, `npm install`, and `docker compose up -d` to start.
 
 ## Quick Start
 
