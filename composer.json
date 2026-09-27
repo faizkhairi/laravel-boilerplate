@@ -65,7 +65,7 @@
         ],
         "test:coverage": [
             "@php artisan config:clear --ansi",
-            "@php artisan test --coverage --min=40"
+            "@php artisan test --coverage --min=60"
         ],
         "analyse": "phpstan analyse --memory-limit=1G",
         "post-autoload-dump": [

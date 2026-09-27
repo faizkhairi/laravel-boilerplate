@@ -9,11 +9,13 @@
         "build": "vite build",
         "dev": "vite",
         "lint": "eslint resources/js --max-warnings=0",
-        "lint:fix": "eslint resources/js --fix"
+        "lint:fix": "eslint resources/js --fix",
+        "test:e2e": "playwright test"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@inertiajs/vue3": "^3.7.0",
+        "@playwright/test": "^1.63.0",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/vite": "^4.3.0",
         "@vitejs/plugin-vue": "^6.0.0",

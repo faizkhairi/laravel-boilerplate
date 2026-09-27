@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DocController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StripeController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -35,3 +36,7 @@ require __DIR__.'/auth.php';
 
 // Stripe webhook (opt-in: set STRIPE_WEBHOOK_SECRET). Excluded from CSRF in bootstrap/app.php.
 Route::post('stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
+
+Route::post('stripe/checkout', [StripeController::class, 'checkout'])
+    ->middleware(['auth', 'throttle:10,1'])
+    ->name('stripe.checkout');

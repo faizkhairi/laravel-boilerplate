@@ -23,3 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 composer.bat
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/database/e2e.sqlite

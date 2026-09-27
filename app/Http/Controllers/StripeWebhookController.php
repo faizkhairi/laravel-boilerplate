@@ -38,6 +38,10 @@ class StripeWebhookController extends Controller
         }
 
         switch ($event->type) {
+            case 'checkout.session.completed':
+                // TODO: Update user subscription status in database
+                Log::info('Stripe checkout completed', ['type' => $event->type, 'id' => $event->id]);
+                break;
             case 'customer.subscription.created':
             case 'customer.subscription.updated':
             case 'customer.subscription.deleted':
@@ -45,8 +49,13 @@ class StripeWebhookController extends Controller
                 Log::info('Stripe subscription event', ['type' => $event->type, 'id' => $event->id]);
                 break;
             case 'invoice.paid':
-            case 'invoice.payment_failed':
+            case 'invoice.payment_succeeded':
+                // TODO: Record payment in database
                 Log::info('Stripe invoice event', ['type' => $event->type, 'id' => $event->id]);
+                break;
+            case 'invoice.payment_failed':
+                // TODO: Notify user of failed payment
+                Log::warning('Stripe invoice event', ['type' => $event->type, 'id' => $event->id]);
                 break;
             default:
                 Log::info('Stripe webhook received', ['type' => $event->type]);
