@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "faizkhairi/laravel-boilerplate",
     "type": "project",
-    "description": "Laravel 12 starter with Breeze + Inertia + Vue 3, RBAC, audit logging, Stripe (opt-in), Docker Compose. No third-party SaaS accounts required.",
+    "description": "Laravel 13 starter with Breeze + Inertia + Vue 3, RBAC, audit logging, Stripe (opt-in), Docker Compose. No third-party SaaS accounts required.",
     "keywords": ["laravel", "boilerplate", "template", "inertia", "vue", "rbac", "stripe"],
     "license": "MIT",
     "authors": [
@@ -13,25 +13,25 @@
         }
     ],
     "require": {
-        "php": "^8.2",
-        "inertiajs/inertia-laravel": "^2.0",
-        "laravel/framework": "^12.0",
-        "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.10.1",
-        "spatie/laravel-permission": "^7.1",
-        "stripe/stripe-php": "^19.3",
-        "tightenco/ziggy": "^2.0"
+        "php": "^8.3",
+        "inertiajs/inertia-laravel": "^3.4",
+        "laravel/framework": "^13.33",
+        "laravel/sanctum": "^4.3",
+        "laravel/tinker": "^3.0",
+        "spatie/laravel-permission": "^8.3",
+        "stripe/stripe-php": "^21.3",
+        "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
         "dedoc/scramble": "^0.13.13",
         "fakerphp/faker": "^1.23",
-        "laravel/breeze": "*",
-        "laravel/pail": "^1.2.2",
-        "laravel/pint": "^1.24",
-        "laravel/sail": "^1.41",
+        "laravel/breeze": "^2.4",
+        "laravel/pail": "^1.2.7",
+        "laravel/pint": "^1.32",
+        "laravel/sail": "^1.68",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.3"
+        "nunomaduro/collision": "^8.9",
+        "phpunit/phpunit": "^12.5"
     },
     "autoload": {
         "psr-4": {

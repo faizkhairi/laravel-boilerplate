@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Services\StripeService;
 use App\Services\StructuredLogger;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Stripe\Exception\SignatureVerificationException;
 
 class StripeController extends Controller
 {
@@ -22,9 +23,9 @@ class StripeController extends Controller
      */
     public function checkout(Request $request): JsonResponse
     {
-        if (!$this->stripe->isEnabled()) {
+        if (! $this->stripe->isEnabled()) {
             return response()->json([
-                'error' => 'Stripe is not configured. Set STRIPE_SECRET_KEY in .env'
+                'error' => 'Stripe is not configured. Set STRIPE_SECRET_KEY in .env',
             ], 503);
         }
 
@@ -50,7 +51,7 @@ class StripeController extends Controller
             StructuredLogger::error('Stripe checkout failed', ['price_id' => $request->priceId], $e);
 
             return response()->json([
-                'error' => 'Failed to create checkout session'
+                'error' => 'Failed to create checkout session',
             ], 500);
         }
     }
@@ -85,7 +86,7 @@ class StripeController extends Controller
             };
 
             return response()->json(['received' => true]);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+        } catch (SignatureVerificationException $e) {
             StructuredLogger::error('Stripe webhook signature verification failed', [], $e);
 
             return response()->json(['error' => 'Invalid signature'], 400);

@@ -51,6 +51,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Session Serialization
+    |--------------------------------------------------------------------------
+    |
+    | This option determines how session data is serialized before it's
+    | stored and unserialized after it's retrieved. Using PHP's native
+    | serialization is typically the most efficient choice available.
+    |
+    | Supported: "php", "json"
+    |
+    */
+
+    'serialization' => env('SESSION_SERIALIZATION', 'php'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Session File Location
     |--------------------------------------------------------------------------
     |

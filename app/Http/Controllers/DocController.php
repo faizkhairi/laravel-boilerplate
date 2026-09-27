@@ -23,6 +23,7 @@ class DocController extends Controller
     {
         $docs = $this->listDocs();
         $content = $this->getDocContent('index');
+
         return Inertia::render('Docs/Index', [
             'docs' => $docs,
             'slug' => 'index',
@@ -40,6 +41,7 @@ class DocController extends Controller
         if ($content === null) {
             abort(404);
         }
+
         return Inertia::render('Docs/Show', [
             'docs' => $docs,
             'slug' => $slug,
@@ -59,6 +61,7 @@ class DocController extends Controller
             }
         }
         usort($docs, fn ($a, $b) => strcmp($a['slug'], $b['slug']));
+
         return $docs;
     }
 
@@ -76,7 +79,8 @@ class DocController extends Controller
             return null;
         }
         $markdown = File::get($path);
-        $converter = new CommonMarkConverter();
+        $converter = new CommonMarkConverter;
+
         return $converter->convert($markdown)->getContent();
     }
 }
