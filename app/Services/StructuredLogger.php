@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Log;
@@ -15,6 +17,8 @@ class StructuredLogger
 {
     /**
      * Log an info message with context.
+     *
+     * @param  array<string, mixed>  $context
      */
     public static function info(string $message, array $context = []): void
     {
@@ -23,6 +27,8 @@ class StructuredLogger
 
     /**
      * Log a warning message with context.
+     *
+     * @param  array<string, mixed>  $context
      */
     public static function warning(string $message, array $context = []): void
     {
@@ -31,6 +37,8 @@ class StructuredLogger
 
     /**
      * Log an error message with context and optional exception.
+     *
+     * @param  array<string, mixed>  $context
      */
     public static function error(string $message, array $context = [], ?\Throwable $exception = null): void
     {
@@ -48,6 +56,9 @@ class StructuredLogger
 
     /**
      * Enrich context with request metadata.
+     *
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
      */
     private static function enrichContext(array $context): array
     {

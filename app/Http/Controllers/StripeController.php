@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Services\StripeService;
@@ -7,6 +9,7 @@ use App\Services\StructuredLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Stripe\Exception\SignatureVerificationException;
+use Stripe\StripeObject;
 
 class StripeController extends Controller
 {
@@ -66,7 +69,7 @@ class StripeController extends Controller
     {
         try {
             $payload = $request->getContent();
-            $signature = $request->header('Stripe-Signature');
+            $signature = (string) $request->header('Stripe-Signature', '');
 
             $event = $this->stripe->verifyWebhook($payload, $signature);
 
@@ -97,7 +100,7 @@ class StripeController extends Controller
         }
     }
 
-    private function handleCheckoutComplete($session): void
+    private function handleCheckoutComplete(StripeObject $session): void
     {
         StructuredLogger::info('Checkout completed', [
             'session_id' => $session->id,
@@ -107,17 +110,17 @@ class StripeController extends Controller
         // TODO: Update user subscription status in database
     }
 
-    private function handleSubscriptionUpdate($subscription): void
+    private function handleSubscriptionUpdate(StripeObject $subscription): void
     {
         StructuredLogger::info('Subscription updated', [
             'subscription_id' => $subscription->id,
-            'status' => $subscription->status,
+            'status' => $subscription['status'] ?? null,
         ]);
 
         // TODO: Update subscription in database
     }
 
-    private function handleSubscriptionDelete($subscription): void
+    private function handleSubscriptionDelete(StripeObject $subscription): void
     {
         StructuredLogger::warning('Subscription deleted', [
             'subscription_id' => $subscription->id,
@@ -126,17 +129,17 @@ class StripeController extends Controller
         // TODO: Cancel subscription in database
     }
 
-    private function handlePaymentSucceeded($invoice): void
+    private function handlePaymentSucceeded(StripeObject $invoice): void
     {
         StructuredLogger::info('Payment succeeded', [
             'invoice_id' => $invoice->id,
-            'amount' => $invoice->amount_paid,
+            'amount' => $invoice['amount_paid'] ?? null,
         ]);
 
         // TODO: Record payment in database
     }
 
-    private function handlePaymentFailed($invoice): void
+    private function handlePaymentFailed(StripeObject $invoice): void
     {
         StructuredLogger::warning('Payment failed', [
             'invoice_id' => $invoice->id,

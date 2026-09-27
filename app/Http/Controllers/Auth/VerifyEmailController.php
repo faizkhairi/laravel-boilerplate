@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -19,6 +21,9 @@ class VerifyEmailController extends Controller
         }
 
         if ($request->user()->markEmailAsVerified()) {
+            // User has the MustVerifyEmail methods (via Authenticatable) but does not
+            // implement the interface unless you opt in to required verification.
+            // @phpstan-ignore argument.type
             event(new Verified($request->user()));
         }
 

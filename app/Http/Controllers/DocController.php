@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\File;
@@ -49,6 +51,9 @@ class DocController extends Controller
         ]);
     }
 
+    /**
+     * @return list<array{slug: string, title: string}>
+     */
     protected function listDocs(): array
     {
         $files = File::files($this->docsPath);

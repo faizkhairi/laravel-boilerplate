@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\AuditLog;
@@ -8,6 +10,8 @@ class AuditLogger
 {
     /**
      * Log a login event.
+     *
+     * @param  array<string, mixed>  $metadata
      */
     public static function logLogin(?int $userId, bool $success = true, array $metadata = []): void
     {
@@ -28,6 +32,8 @@ class AuditLogger
 
     /**
      * Log a registration event.
+     *
+     * @param  array<string, mixed>  $metadata
      */
     public static function logRegistration(int $userId, array $metadata = []): void
     {
