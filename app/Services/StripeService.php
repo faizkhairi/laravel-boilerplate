@@ -2,7 +2,12 @@
 
 namespace App\Services;
 
+use Stripe\Checkout\Session;
+use Stripe\Event;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\SignatureVerificationException;
 use Stripe\StripeClient;
+use Stripe\Webhook;
 
 /**
  * Opt-in Stripe service. Only active when STRIPE_SECRET_KEY is set.
@@ -37,20 +42,20 @@ class StripeService
     /**
      * Create a Stripe Checkout session for subscription.
      *
-     * @param string $priceId Stripe Price ID
-     * @param string $customerEmail Customer email
-     * @param string $successUrl URL to redirect after successful payment
-     * @param string $cancelUrl URL to redirect if payment is canceled
-     * @return \Stripe\Checkout\Session
-     * @throws \Stripe\Exception\ApiErrorException
+     * @param  string  $priceId  Stripe Price ID
+     * @param  string  $customerEmail  Customer email
+     * @param  string  $successUrl  URL to redirect after successful payment
+     * @param  string  $cancelUrl  URL to redirect if payment is canceled
+     *
+     * @throws ApiErrorException
      */
     public function createCheckoutSession(
         string $priceId,
         string $customerEmail,
         string $successUrl,
         string $cancelUrl
-    ): \Stripe\Checkout\Session {
-        if (!$this->isEnabled()) {
+    ): Session {
+        if (! $this->isEnabled()) {
             throw new \RuntimeException('Stripe is not configured. Set STRIPE_SECRET_KEY in .env');
         }
 
@@ -70,15 +75,15 @@ class StripeService
     /**
      * Verify webhook signature.
      *
-     * @param string $payload Raw request body
-     * @param string $signature Stripe-Signature header
-     * @return \Stripe\Event
-     * @throws \Stripe\Exception\SignatureVerificationException
+     * @param  string  $payload  Raw request body
+     * @param  string  $signature  Stripe-Signature header
+     *
+     * @throws SignatureVerificationException
      */
-    public function verifyWebhook(string $payload, string $signature): \Stripe\Event
+    public function verifyWebhook(string $payload, string $signature): Event
     {
         $webhookSecret = config('services.stripe.webhook_secret');
 
-        return \Stripe\Webhook::constructEvent($payload, $signature, $webhookSecret);
+        return Webhook::constructEvent($payload, $signature, $webhookSecret);
     }
 }

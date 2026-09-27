@@ -43,10 +43,9 @@ class AuditLog extends Model
     /**
      * Log an authentication event.
      *
-     * @param string $event Event type (LOGIN, LOGOUT, REGISTER, etc.)
-     * @param int|null $userId User ID (null for failed attempts)
-     * @param array $metadata Additional context
-     * @return static
+     * @param  string  $event  Event type (LOGIN, LOGOUT, REGISTER, etc.)
+     * @param  int|null  $userId  User ID (null for failed attempts)
+     * @param  array  $metadata  Additional context
      */
     public static function logAuthEvent(string $event, ?int $userId = null, array $metadata = []): static
     {

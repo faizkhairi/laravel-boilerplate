@@ -6,6 +6,7 @@ use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
+use Stripe\Webhook;
 
 /**
  * Handles Stripe webhooks (opt-in). Only processes when STRIPE_WEBHOOK_SECRET is set.
@@ -27,9 +28,10 @@ class StripeWebhookController extends Controller
         $sig = $request->header('Stripe-Signature');
 
         try {
-            $event = \Stripe\Webhook::constructEvent($payload, $sig, $secret);
+            $event = Webhook::constructEvent($payload, $sig, $secret);
         } catch (\Exception $e) {
             Log::warning('Stripe webhook signature verification failed', ['error' => $e->getMessage()]);
+
             return response('Invalid signature', 400);
         }
 

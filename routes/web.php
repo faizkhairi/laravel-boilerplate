@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\DocController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,8 +21,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/docs', [App\Http\Controllers\DocController::class, 'index'])->name('docs.index');
-    Route::get('/docs/{slug}', [App\Http\Controllers\DocController::class, 'show'])->name('docs.show')->where('slug', '[a-z0-9\-]+');
+    Route::get('/docs', [DocController::class, 'index'])->name('docs.index');
+    Route::get('/docs/{slug}', [DocController::class, 'show'])->name('docs.show')->where('slug', '[a-z0-9\-]+');
 });
 
 Route::middleware('auth')->group(function () {
@@ -32,4 +34,4 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 // Stripe webhook (opt-in: set STRIPE_WEBHOOK_SECRET). Excluded from CSRF in bootstrap/app.php.
-Route::post('stripe/webhook', App\Http\Controllers\StripeWebhookController::class)->name('stripe.webhook');
+Route::post('stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
