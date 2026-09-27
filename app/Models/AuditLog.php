@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +12,7 @@ class AuditLog extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<string>
+     * @var list<string>
      */
     protected $fillable = [
         'user_id',
@@ -34,6 +36,8 @@ class AuditLog extends Model
 
     /**
      * Get the user that owns the audit log.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -45,11 +49,11 @@ class AuditLog extends Model
      *
      * @param  string  $event  Event type (LOGIN, LOGOUT, REGISTER, etc.)
      * @param  int|null  $userId  User ID (null for failed attempts)
-     * @param  array  $metadata  Additional context
+     * @param  array<string, mixed>  $metadata  Additional context
      */
-    public static function logAuthEvent(string $event, ?int $userId = null, array $metadata = []): static
+    public static function logAuthEvent(string $event, ?int $userId = null, array $metadata = []): self
     {
-        return static::create([
+        return self::create([
             'user_id' => $userId,
             'event' => $event,
             'ip_address' => request()->ip(),

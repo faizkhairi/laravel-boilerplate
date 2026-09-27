@@ -4,50 +4,149 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  laravel:
-    name: Laravel (PHP + Frontend)
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.4"
-          extensions: pdo, pdo_pgsql, pdo_sqlite, mbstring, xml, ctype, json
           coverage: none
-
-      - name: Get Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
+      - uses: actions/setup-node@v7
         with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          node-version-file: .nvmrc
+          cache: npm
+      - run: composer install --no-progress --no-interaction --prefer-dist
+      - run: npm ci
 
-      - name: Install Composer dependencies
-        run: composer install --no-progress --no-interaction --prefer-dist
+      - name: PHP format check (Pint)
+        run: vendor/bin/pint --test
 
-      - name: Copy .env
-        run: cp .env.example .env
+      - name: Frontend lint (ESLint)
+        run: npm run lint
 
-      - name: Generate APP_KEY
-        run: php artisan key:generate
+      - name: No em dashes
+        run: bash .github/scripts/check-dashes.sh
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
         with:
-          node-version: "20"
+          php-version: "8.4"
+          coverage: none
+      - run: composer install --no-progress --no-interaction --prefer-dist
 
-      - name: Install npm dependencies
-        run: npm install --legacy-peer-deps
+      - name: Static analysis (Larastan)
+        run: composer analyse -- --no-progress --error-format=github
 
-      - name: Build frontend
-        run: npm run build
+  test:
+    name: Test (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # 8.3 is the composer.json floor; 8.4 is the target and runs coverage.
+        php: ["8.3", "8.4"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, mbstring, intl, zip
+          coverage: ${{ matrix.php == '8.4' && 'pcov' || 'none' }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: composer install --no-progress --no-interaction --prefer-dist
+      - name: Prepare .env
+        run: cp .env.example .env && php artisan key:generate
+
+      # Inertia pages render @vite tags, which need the build manifest.
+      - name: Build assets
+        run: npm ci && npm run build
+
+      - name: Tests with coverage floor
+        if: matrix.php == '8.4'
+        run: composer test:coverage
+
+      - name: Tests
+        if: matrix.php != '8.4'
+        run: php artisan test
+
+  build:
+    name: Build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22 is the engines floor; 24 is the .nvmrc target.
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      # app.js imports Ziggy from vendor/.
+      - run: composer install --no-dev --no-progress --no-interaction --prefer-dist
+      - run: npm ci
+      - run: npm run build
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Composer audit
+        run: composer audit --locked
+
+      - name: npm audit (high and critical)
+        run: npm audit --audit-level=high
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
