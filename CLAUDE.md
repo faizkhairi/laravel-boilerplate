@@ -1,239 +1,137 @@
-# Laravel Boilerplate — AI Development Guide
+# Laravel Boilerplate: AI Development Guide
 
-## Project Overview
-
-Production-ready Laravel boilerplate with **zero external account dependencies**. Inertia.js + Vue 3 + Tailwind for the frontend; Laravel Breeze for auth. No Clerk, Resend, Sentry, or PostHog.
-
-**Philosophy:** Self-contained; run `composer install`, `npm install`, `docker compose up -d`, and start coding.
-
----
+Guidance for an AI assistant (or a new contributor) working in this repository. It needs no third-party SaaS accounts to run.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Laravel 12 |
-| Auth | Laravel Breeze (Inertia + Vue) |
-| Frontend | Inertia.js, Vue 3, Vite, Tailwind CSS, Shadcn-style UI (radix-vue, CVA), dark mode |
+| Framework | Laravel 13 (PHP ^8.3; CI and the Dockerfile use 8.4) |
+| Auth | Laravel Breeze (Inertia + Vue stack) |
+| Frontend | Inertia.js 3, Vue 3, Vite 8, Tailwind CSS 4 (CSS-first config, no `tailwind.config.js`) |
 | Database | PostgreSQL 16 (default), MySQL 8 |
 | Email | Laravel Mail + SMTP (Mailpit in dev) |
 | API | Laravel Sanctum; `routes/api.php`; `GET /api/user` |
-| Queue | Database driver; `SendWelcomeEmail` job, `WelcomeMail` mailable |
-| Payments | Stripe (opt-in); `StripeService`, `StripeController` (checkout + webhook) |
-| RBAC | Spatie Laravel Permission; roles (admin, user), permissions, gates |
-| Audit Logging | `AuditLog` model, `AuditLogger` service; tracks auth events |
-| Structured Logging | `StructuredLogger` service; auto-context (user_id, IP, URL) |
-| API Docs | Scramble; auto-generated OpenAPI 3.0 at `/docs/api` |
-| Error Pages | Custom 404, 500, 403 with Tailwind styling |
-| Email Templates | Responsive HTML table layouts (welcome, password-reset, verify-email) |
-| Testing | PHPUnit (Breeze tests); Laravel Dusk for E2E (requires ZIP extension) |
+| Queue | Database driver (opt-in); `SendWelcomeEmail` job, `WelcomeMail` mailable |
+| Payments | Stripe (opt-in); `App\Services\StripeService`, `App\Http\Controllers\StripeController` |
+| RBAC | Spatie Laravel Permission; roles `admin`, `user` seeded by `RolesAndPermissionsSeeder` |
+| Audit logging | `App\Models\AuditLog`, `App\Services\AuditLogger`; auto-discovered listeners in `app/Listeners` |
+| API docs | Scramble, OpenAPI docs at `/docs/api` |
+| Testing | PHPUnit 12, Larastan (level 7), Pint, ESLint, Playwright |
 
----
-
-## Directory Structure
-
-```
-app/
-├── Http/Controllers/Auth/   # Breeze auth controllers
-├── Http/Controllers/DocController.php
-├── Http/Controllers/StripeWebhookController.php
-├── Jobs/SendWelcomeEmail.php
-├── Mail/WelcomeMail.php
-├── Models/
-├── Services/StripeService.php
-docs/                        # Markdown docs (index, guide, livewire-variant)
-resources/
-├── js/
-│   ├── Components/ui/       # Shadcn-style (Button, Card, CardHeader, CardContent)
-│   ├── Layouts/
-│   ├── Pages/Docs/
-│   ├── lib/utils.js         # cn() for class merging
-│   └── app.js
-routes/
-├── web.php
-├── auth.php
-├── api.php                  # Sanctum; GET /api/user
-database/migrations/
-tests/Feature, Unit
-```
-
----
-
-## Conventions
-
-### Auth
-
-- Breeze handles register, login, logout, email verification, password reset.
-- Protected routes: use `auth` middleware; Inertia shared data exposes `user` when authenticated.
-- Sanctum is installed for SPA/mobile API auth if needed.
-
-### Database
-
-- Default connection: PostgreSQL (`DB_CONNECTION=pgsql`). Use MySQL by changing `.env`.
-- Migrations: `php artisan migrate`. Fresh: `php artisan migrate:fresh`.
-- Never commit `.env`; use `.env.example` as template. Generate `APP_KEY` with `php artisan key:generate`.
-
-### Email
-
-- Dev: Mailpit (ports 1025 SMTP, 8025 UI). Set `MAIL_MAILER=smtp`, `MAIL_HOST=127.0.0.1`, `MAIL_PORT=1025`.
-- Production: set `MAIL_*` to your SMTP provider. No Resend or other SaaS required.
-
-### Frontend
-
-- Inertia pages live in `resources/js/Pages/`. Use Vue 3 Composition API.
-- Vite alias: `@` points to `resources/js` (see `vite.config.js`).
-- Run `npm run build` before deploy; ensure it passes (path aliases must resolve).
-
-### Security
-
-- CSRF: enabled for web routes. Inertia sends `X-XSRF-TOKEN` / `X-CSRF-TOKEN`.
-- Production: `APP_DEBUG=false`, HTTPS, throttle on auth routes (Breeze default).
-
-### RBAC (Roles & Permissions)
-
-- Package: Spatie Laravel Permission (`spatie/laravel-permission`)
-- User model has `HasRoles` trait
-- Seeder: `RolesAndPermissionsSeeder` creates `admin` and `user` roles + permissions
-- Usage:
-  - Check role: `$user->hasRole('admin')`
-  - Check permission: `$user->can('edit users')`
-  - Assign role: `$user->assignRole('admin')`
-  - Middleware: `Route::middleware(['role:admin'])`
-  - Blade: `@role('admin') ... @endrole`
-
-### Audit Logging
-
-- Model: `App\Models\AuditLog` (tracks user_id, event, ip_address, user_agent, metadata)
-- Service: `App\Services\AuditLogger` with helper methods
-- Usage:
-  - `AuditLogger::logLogin($userId)`
-  - `AuditLogger::logLogout($userId)`
-  - `AuditLogger::logRegistration($userId)`
-  - `AuditLogger::logPasswordReset($userId)`
-  - `AuditLogger::logOAuthLogin($userId, 'google')`
-  - `AuditLogger::logFailedLogin($email)`
-- Events logged: LOGIN, LOGOUT, REGISTRATION, PASSWORD_RESET, EMAIL_VERIFIED, OAUTH_LOGIN, LOGIN_FAILED
-
-### Structured Logging
-
-- Service: `App\Services\StructuredLogger`
-- Auto-enriches logs with: user_id, IP, URL, HTTP method
-- Usage:
-  - `StructuredLogger::info('message', ['key' => 'value'])`
-  - `StructuredLogger::warning('message', $context)`
-  - `StructuredLogger::error('message', $context, $exception)`
-- Production: Set `LOG_STACK=daily` and `LOG_DAILY_DAYS=14` in `.env` for log rotation
-
-### API Documentation
-
-- Package: Scramble (`dedoc/scramble`)
-- Auto-generates OpenAPI 3.0 docs from routes, controllers, form requests
-- Access: `/docs/api` (requires authentication)
-- Zero manual documentation needed — add PHPDoc comments and type hints for best results
-
-### Stripe Integration
-
-- Service: `App\Services\StripeService`
-- Controller: `App\Http\Controllers\StripeController`
-- Endpoints:
-  - `POST /stripe/checkout` — Create checkout session (requires `priceId`)
-  - `POST /stripe/webhook` — Handle Stripe events (CSRF-exempt)
-- Webhook events handled:
-  - `checkout.session.completed`
-  - `customer.subscription.updated`
-  - `customer.subscription.deleted`
-  - `invoice.payment_succeeded`
-  - `invoice.payment_failed`
-- Setup: Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in `.env`
-
-### Error Pages
-
-- Custom Blade views in `resources/views/errors/`
-- Files: `404.blade.php`, `500.blade.php`, `403.blade.php`
-- Tailwind styled with dark mode support
-- Laravel automatically uses these instead of defaults
-
-### Email Templates
-
-- Responsive HTML table-based layouts for email client compatibility
-- Files:
-  - `resources/views/emails/welcome.blade.php`
-  - `resources/views/emails/password-reset.blade.php`
-  - `resources/views/emails/verify-email.blade.php`
-- Variables: `$user`, `$resetUrl`, `$verificationUrl`
-- Customize: Edit Blade files directly (logo, colors, footer)
-
----
-
-## Development Workflow
-
-### Setup
+## Commands
 
 ```bash
 composer install
 cp .env.example .env
 php artisan key:generate
-docker compose up -d
-php artisan migrate
-npm install --legacy-peer-deps
-npm run build
+docker compose up -d          # PostgreSQL + Mailpit
+php artisan migrate --seed
+npm install
+composer dev                  # server + queue listener + pail + vite together
 ```
 
-### Run
+Checks:
 
 ```bash
-php artisan serve    # Laravel
-npm run dev          # Vite (separate terminal)
+vendor/bin/pint --test        # PHP formatting
+composer analyse              # Larastan, level 7
+npm run lint                  # ESLint, resources/js, 0 warnings allowed
+composer test                 # PHPUnit
+composer test:coverage        # PHPUnit with a 60% coverage floor (needs pcov/Xdebug)
+npm run build && npm run test:e2e   # Playwright, needs a migrated SQLite DB at database/e2e.sqlite
 ```
 
-### Tests
+Run the same checks CI runs before pushing; CI matrices PHP 8.3/8.4 and Node 22/24. See `.github/workflows/ci.yml`.
 
-```bash
-php artisan test
+## Directory Structure
+
+```
+app/
+├── Http/Controllers/Auth/     # Breeze auth controllers
+├── Http/Controllers/DocController.php
+├── Http/Controllers/StripeController.php
+├── Http/Controllers/StripeWebhookController.php
+├── Http/Middleware/SecurityHeaders.php
+├── Jobs/SendWelcomeEmail.php
+├── Listeners/                 # Auth event listeners, write to audit_logs
+├── Mail/WelcomeMail.php
+├── Models/
+├── Services/                  # AuditLogger, StripeService, StructuredLogger
+bootstrap/app.php              # Middleware registration, CSRF exceptions
+docs/                          # Markdown, served at /docs (auth required)
+resources/
+├── css/app.css                # Tailwind 4 CSS-first config
+├── js/
+│   ├── Components/ui/         # Button, Card, CardHeader, CardContent
+│   ├── Layouts/
+│   ├── Pages/
+│   ├── lib/utils.js           # cn() class merge helper
+routes/
+├── web.php
+├── auth.php                   # Breeze routes, throttled
+├── api.php                    # Sanctum, throttled
+database/migrations/, seeders/
+tests/Feature, tests/Unit
+e2e/                            # Playwright specs
 ```
 
-### Pre-Push Build Verification
+## Conventions
 
-**Always run the production build locally before pushing to CI:**
-```bash
-npm run build && php artisan test
-```
-This catches Vite build issues (missing path aliases, component imports) and test failures.
+### PHP
 
-**Important:** CI uses PHP 8.4. Ensure local PHP matches or is compatible. Laravel 12 + Symfony 8.x requires PHP >= 8.4.
+- `declare(strict_types=1);` at the top of every file in `app/` and `tests/`.
+- Format with Pint before committing (`vendor/bin/pint`); CI runs `vendor/bin/pint --test`.
+- Larastan level 7 (`phpstan.neon`) covers `app`, `config`, `database`, `routes`. Fix type issues rather than adding blanket ignores.
+- Use Eloquent or the Query Builder; do not write raw SQL.
+- New database changes go through a migration (`php artisan make:migration`), never manual schema edits.
 
-### Verification (post-clone)
+### Frontend
 
-1. `composer install` && `npm install --legacy-peer-deps`
-2. `cp .env.example .env` && `php artisan key:generate`
-3. `docker compose up -d` && `php artisan migrate`
-4. `npm run build` (must succeed)
-5. `php artisan test` (must pass)
-6. Manual: register → check Mailpit 8025 → verify email → login → dashboard
+- Inertia pages live in `resources/js/Pages/`. Use the Vue 3 Composition API.
+- `@` resolves to `resources/js` (see `vite.config.js`).
+- Tailwind 4 is configured in `resources/css/app.css` (`@import`, `@theme`, `@plugin`); there is no `tailwind.config.js` or `postcss.config.js` to edit.
+- `resources/js/Components/ui/` holds a small set of Shadcn-style primitives (`Button`, `Card`, `CardHeader`, `CardContent`) built with `class-variance-authority`, `clsx`, and `tailwind-merge`. There is no headless-UI library (for example radix-vue) in this project; extend these primitives directly.
+- Run `npm run build` before deploying, and `npm run lint` (zero warnings) before committing.
 
----
+### Security
+
+- `app/Http/Middleware/SecurityHeaders.php` sets a nonce-based Content-Security-Policy. New inline `<script>` tags will be blocked; use a `@vite` tag or attach the request's CSP nonce. `/docs/api` (Scramble) is the only route exempted from the strict CSP.
+- CSRF is enabled for web routes; `stripe/webhook` is the only route excluded (`bootstrap/app.php`), because Stripe cannot send a CSRF token.
+- Any new public (unauthenticated) route needs its own rate limit. Existing patterns: `throttle:api` (60/min) for `routes/api.php`, `throttle:6,1` for auth actions (register, forgot-password, reset-password), Breeze's built-in limiter for login, `throttle:10,1` plus `auth` for `/stripe/checkout`.
+- Never commit `.env` or a real `APP_KEY`.
+
+### RBAC
+
+- Package: `spatie/laravel-permission`. The `User` model uses `HasRoles`.
+- `RolesAndPermissionsSeeder` creates the `admin` and `user` roles and their permissions.
+- Registering through the web form does not assign a role; assign one explicitly (`$user->assignRole('admin')`) where that is required.
+- Check role: `$user->hasRole('admin')`. Check permission: `$user->can('edit users')`. Route middleware: `Route::middleware(['role:admin'])`. Blade: `@role('admin') ... @endrole`.
+
+### Audit Logging
+
+- `App\Services\AuditLogger` is called from listeners in `app/Listeners` that react to Laravel's built-in auth events.
+- Events recorded to `audit_logs`: `LOGIN`, `LOGIN_FAILED` (stores the attempted email only, never a password), `LOGOUT`, `REGISTRATION`, `PASSWORD_RESET_REQUESTED`, `PASSWORD_RESET`, `EMAIL_VERIFIED`.
+
+### Stripe (opt-in)
+
+- `POST /stripe/checkout` (auth required, throttled 10/min): body `{"priceId": "price_..."}`, returns `{"url": "..."}`. Returns 503 when `STRIPE_SECRET_KEY` is unset, 422 when `priceId` fails validation.
+- `POST /stripe/webhook`: verifies the Stripe signature and rejects the request (400) when it is missing or invalid. Excluded from CSRF verification in `bootstrap/app.php`.
+
+### Email
+
+- Dev: Mailpit (SMTP `1025`, UI `8025`). `MAIL_MAILER=smtp`, `MAIL_HOST=127.0.0.1`, `MAIL_PORT=1025`.
+- On registration, `SendWelcomeEmailListener` dispatches the queued `SendWelcomeEmail` job. A delivery failure is logged; it never fails registration.
+- Set `QUEUE_CONNECTION=database` and run `php artisan queue:work` to process queued jobs outside `composer dev`.
 
 ## What NOT to Do
 
-- Do not commit `.env` or `APP_KEY`.
-- Do not add Clerk, Sentry, PostHog, Resend, or similar without documenting as optional.
-- Do not remove Breeze auth scaffolding without replacing with equivalent auth.
-- Do not use raw SQL; use Eloquent or Query Builder.
-- Do not skip migrations for schema changes; use `php artisan make:migration`.
-
----
-
-## Optional Add-ons (Included)
-
-- **Stripe**: Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`; `POST /stripe/webhook` (CSRF-exempt). Use `App\Services\StripeService`.
-- **Shadcn-style UI**: `resources/js/Components/ui/` (Button, Card, CardHeader, CardContent); `@/lib/utils` has `cn()`. Use `class-variance-authority`, `clsx`, `tailwind-merge`, `radix-vue`.
-- **Docs**: `/docs` (auth required); markdown in `docs/*.md`; `DocController` renders via League CommonMark.
-- **Queue**: Set `QUEUE_CONNECTION=database`; run `php artisan queue:work`. Dispatch `SendWelcomeEmail::dispatch($user)` after registration to send welcome email.
-- **Dark mode**: Toggle in nav; preference in `localStorage` key `theme`; Tailwind `dark:` variants.
-- **Livewire variant**: See `docs/livewire-variant.md` for an all-PHP (Livewire + Blade) alternative.
-
----
+- Do not commit `.env` or an `APP_KEY`.
+- Do not add a third-party SaaS dependency (Sentry, PostHog, Resend, and similar) without documenting it as optional.
+- Do not remove Breeze auth scaffolding without replacing it with equivalent auth.
+- Do not add a new public route without a rate limiter.
+- Do not add an inline `<script>` without the CSP nonce; it will be blocked by `SecurityHeaders`.
 
 ## Logging
 
-Laravel logs to `storage/logs/laravel.log`. Configure channels in `config/logging.php`. For daily rotation and retention: set `LOG_STACK=daily` and `LOG_DAILY_DAYS=14` in production.
+Laravel logs to `storage/logs/laravel.log` (`config/logging.php`). `App\Services\StructuredLogger` adds `user_id`, IP, URL, and HTTP method to log context automatically. Set `LOG_STACK=daily` and `LOG_DAILY_DAYS=14` in production for rotation.
