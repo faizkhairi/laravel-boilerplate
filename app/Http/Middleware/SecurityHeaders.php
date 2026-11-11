@@ -68,7 +68,9 @@ class SecurityHeaders
 
         $scriptSrc = ["'self'", "'nonce-{$nonce}'"];
         $styleSrc = ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net'];
-        $fontSrc = ["'self'", 'https://fonts.bunny.net'];
+        // fonts.bunny.net's CSS now points its font files at jsDelivr's fontsource
+        // path, so allow that path only (not all of cdn.jsdelivr.net).
+        $fontSrc = ["'self'", 'https://fonts.bunny.net', 'https://cdn.jsdelivr.net/fontsource/'];
         // laravel.com serves the decorative images on the stock Welcome page.
         // Drop it once you replace that page with your own.
         $imgSrc = ["'self'", 'data:', 'https://laravel.com'];
